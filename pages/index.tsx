@@ -1,43 +1,11 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useArticles } from "../api/hooks";
 import Article from "../components/Article";
 import styles from "../styles/Home.module.css";
 
-const URL = "https://www.reddit.com/r/AmItheAsshole.json";
-
-const fetchArticles = async () => {
-  console.log("[start fetching articles]");
-  const response = await fetch(URL);
-  console.log("[finished fetching articles]");
-  const responseBody = await response.json();
-  return responseBody;
-};
-
-const useArticles = () => {
-  const [data, setData] = useState();
-  const [error, setError] = useState();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchArticles()
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError(error);
-        setLoading(false);
-      });
-  }, []);
-
-  return { data, error, loading };
-};
-
 const Home: NextPage = () => {
   const { data, error, loading } = useArticles();
-
   if (loading) return <div>loading...</div>;
 
   const articles = (data as any).data.children;
@@ -59,7 +27,7 @@ const Home: NextPage = () => {
               content: article.data.selftext,
               score: article.data.score,
               date: article.data.created_utc,
-              username: article.data.author_fullname,
+              username: article.data.author,
             }}
             comments={[]}
           />
