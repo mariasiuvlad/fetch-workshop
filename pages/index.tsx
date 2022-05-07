@@ -1,11 +1,47 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useEffect, useState } from "react";
 import Article from "../components/Article";
-import ArticleDetails from "../components/ArticleDetails";
-import Comment from "../components/Comment";
 import styles from "../styles/Home.module.css";
 
+const URL = "https://www.reddit.com/r/AmItheAsshole.json";
+
+const fetchArticles = async () => {
+  console.log("[start fetching articles]");
+  const response = await fetch(URL);
+  console.log("[finished fetching articles]");
+  const responseBody = await response.json();
+  return responseBody;
+};
+
+const useArticles = () => {
+  const [data, setData] = useState();
+  const [error, setError] = useState();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchArticles()
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error);
+        setLoading(false);
+      });
+  }, []);
+
+  return { data, error, loading };
+};
+
 const Home: NextPage = () => {
+  const { data, error, loading } = useArticles();
+
+  if (loading) return <div>loading...</div>;
+
+  const articles = (data as any).data.children;
+
   return (
     <div className={styles.container}>
       <Head>
@@ -15,40 +51,19 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <Article
-          details={{
-            title: "Title",
-            content: "Hellow people",
-            upvotes: 10,
-            downvotes: 20,
-            date: new Date().toString(),
-            username: "Emi",
-          }}
-          comments={[
-            {
-              content: "Hellow people",
-              upvotes: 10,
-              downvotes: 20,
-              date: new Date().toString(),
-              username: "Emi",
-            },
-          ]}
-        />
-        {/* <Comment
-          content="Hellow people"
-          upvotes={10}
-          downvotes={20}
-          date={new Date().toString()}
-          username="Emi"
-        />
-        <ArticleDetails
-          title="Title"
-          content="Hellow people"
-          upvotes={10}
-          downvotes={20}
-          date={new Date().toString()}
-          username="Emi"
-        /> */}
+        {articles.map((article: any) => (
+          <Article
+            key={article.data.name}
+            details={{
+              title: article.data.title,
+              content: article.data.selftext,
+              score: article.data.score,
+              date: article.data.created_utc,
+              username: article.data.author_fullname,
+            }}
+            comments={[]}
+          />
+        ))}
       </main>
     </div>
   );

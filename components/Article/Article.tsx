@@ -11,7 +11,7 @@ interface ArticleProps {
 
 const Article: FC<ArticleProps> = (props) => {
   return (
-    <div>
+    <div className="m-2 bg-gray-200">
       <ArticleDetails {...props.details} />
       {props.comments.map((comment, index) => (
         <Comment key={index} {...comment} />
